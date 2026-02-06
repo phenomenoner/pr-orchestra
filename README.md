@@ -1,6 +1,9 @@
 # PR Orchestra
 
+
 A GitHub-first coordination layer for **Supervisor + Contributor** development workflows.
+
+> If your team already has capable coding agents, PR Orchestra is the thin orchestration layer that keeps parallel PR work predictable, reviewable, and mergeable.
 
 PR Orchestra helps teams run multi-agent engineering with clear role boundaries:
 - **Contributors** implement work and submit PRs.
@@ -151,6 +154,12 @@ See `docs/future-project-ideas.md`.
 uv run --python 3.13 --with pytest pytest -q
 uv run --python 3.13 -- python -m unittest -v tests/test_meeting_packet.py tests/test_create_next_tasks.py
 ```
+
+---
+
+## License
+
+MIT (see [LICENSE](LICENSE)).
 
 ---
 
