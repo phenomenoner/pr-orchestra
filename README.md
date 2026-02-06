@@ -67,6 +67,15 @@ python3 scripts/meeting_packet.py --repo owner/name --out docs/MEETING_PACKET.md
 ```
 *Summarizes open PRs, risk levels, missing PR sections, and recommended merge order.*
 
+**Create Issues for next tasks:**
+```bash
+python3 scripts/create_next_tasks.py --repo owner/name --input docs/NEXT_TASKS.md
+```
+*Creates GitHub Issues from a markdown or JSON task list (labels default to `agent-task`).*
+
+Meeting Issue template:
+- `templates/meeting_issue.md`
+
 ## 📂 Project Structure
 - `scripts/supervisor.py`: CI Risk Gate & Auto-merge logic.
 - `scripts/scope_guard.py`: Worker Sandbox (prevents unauthorized file edits).

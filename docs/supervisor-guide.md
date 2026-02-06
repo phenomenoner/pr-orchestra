@@ -29,4 +29,9 @@ Config: `.supervisor-agent.yml`
 ## Automation
 GitHub Action template: `templates/github-workflows/supervisor.yml`
 
+Issue creation helper (next tasks):
+```bash
+python3 scripts/create_next_tasks.py --repo owner/name --input docs/NEXT_TASKS.md --dry-run
+```
+
 > Note: The workflow defaults to dry-run; flip `SUPERVISOR_DRY_RUN` to enable labels/comments/auto-merge.

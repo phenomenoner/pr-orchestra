@@ -8,8 +8,8 @@
 
 ## Phase 1 (GitHub-first, meeting mode)
 - [x] `meeting_packet` generator (scan open PRs → packet)
-- [ ] “Meeting Issue” convention + summary format
-- [ ] Supervisor command to create Issues for next tasks
+- [x] “Meeting Issue” convention + summary format
+- [x] Supervisor command to create Issues for next tasks
 
 ## Phase 2 (quality-of-life)
 - [ ] Better PR payload enforcement (fail check if missing sections)
