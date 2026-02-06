@@ -7,7 +7,7 @@
 - [x] E2E local demo
 
 ## Phase 1 (GitHub-first, meeting mode)
-- [ ] `meeting_packet` generator (scan open PRs → packet)
+- [x] `meeting_packet` generator (scan open PRs → packet)
 - [ ] “Meeting Issue” convention + summary format
 - [ ] Supervisor command to create Issues for next tasks
 

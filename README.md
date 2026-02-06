@@ -61,6 +61,12 @@ python3 scripts/contributor_loop.py
 ```
 *Picks up tasks, performs work (default: `touch file`), and safeguards commits.*
 
+**Meeting Packet (Supervisor meeting mode):**
+```bash
+python3 scripts/meeting_packet.py --repo owner/name --out docs/MEETING_PACKET.md
+```
+*Summarizes open PRs, risk levels, missing PR sections, and recommended merge order.*
+
 ## 📂 Project Structure
 - `scripts/supervisor.py`: CI Risk Gate & Auto-merge logic.
 - `scripts/scope_guard.py`: Worker Sandbox (prevents unauthorized file edits).
