@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Local role config
+.agent_role.json
+
+# Local work queues / artifacts
+work/
+
+# Test sandboxes created by tests/demo_e2e.sh
+test_env_*/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
