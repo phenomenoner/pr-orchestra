@@ -12,7 +12,7 @@
 - [x] Supervisor command to create Issues for next tasks
 
 ## Phase 2 (quality-of-life)
-- [ ] Better PR payload enforcement (fail check if missing sections)
+- [x] Better PR payload enforcement (fail check if missing sections)
 - [ ] Auto-assign reviewers / owners by area
 - [ ] Support multiple languages in PR payload with canonical English summary
 

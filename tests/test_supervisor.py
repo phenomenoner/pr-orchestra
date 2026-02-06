@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Make supervisor importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-from supervisor import risk_level, load_config, matches_any, Config  # noqa: E402
+from supervisor import risk_level, load_config, matches_any, missing_pr_sections, Config  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -162,6 +162,43 @@ def test_load_config_parses_inline_list(tmp_path):
     yml.write_text('auto_merge_levels: ["L0"]\n')
     cfg = load_config(yml)
     assert cfg.auto_merge_levels == ["L0"]
+
+
+# ---------------------------------------------------------------------------
+# missing_pr_sections — template enforcement helper
+# ---------------------------------------------------------------------------
+def test_missing_pr_sections_none_missing():
+    body = """
+    ## Intent
+    x
+
+    ## Approach
+    y
+
+    ## Risk/Impact
+    z
+
+    ## Test Plan
+    run tests
+
+    ## Docs/Notes
+    updated docs
+    """
+    assert missing_pr_sections(body) == []
+
+
+def test_missing_pr_sections_detects_missing_items():
+    body = """
+    ## Intent
+    x
+
+    ## Approach
+    y
+    """
+    missing = missing_pr_sections(body)
+    assert "Risk/Impact" in missing
+    assert "Test Plan" in missing
+    assert "Docs/Notes" in missing
 
 
 # ---------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+import re
 
 
 def eprint(*a: object) -> None:
@@ -41,6 +42,14 @@ class Config:
 
 
 DEFAULT_CONFIG_PATH = Path(".supervisor-agent.yml")
+
+REQUIRED_PR_SECTIONS: dict[str, tuple[str, ...]] = {
+    "Intent": ("intent",),
+    "Approach": ("approach",),
+    "Risk/Impact": ("risk", "impact"),
+    "Test Plan": ("test plan", "testplan", "tests"),
+    "Docs/Notes": ("docs", "documentation", "notes"),
+}
 
 
 def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
@@ -241,7 +250,33 @@ def enable_auto_merge(pr_node_id: str, token: str) -> bool:
 
 
 def matches_any(path: str, globs: list[str]) -> bool:
-    return any(fnmatch.fnmatch(path, g) for g in globs)
+    for g in globs:
+        if fnmatch.fnmatch(path, g):
+            return True
+        # Python fnmatch may not match root-level files with patterns like **/*lock*
+        if g.startswith("**/") and fnmatch.fnmatch(path, g[3:]):
+            return True
+    return False
+
+
+def _heading_line_key(line: str) -> str:
+    s = line.strip().lower()
+    s = re.sub(r"^#+\s*", "", s)
+    s = re.sub(r"^[-*]\s*", "", s)
+    s = s.strip("*` ")
+    s = s.rstrip(":： ")
+    return s
+
+
+def missing_pr_sections(body: str) -> list[str]:
+    text = body or ""
+    keys = {_heading_line_key(line) for line in text.splitlines() if line.strip()}
+
+    missing: list[str] = []
+    for section, aliases in REQUIRED_PR_SECTIONS.items():
+        if not any(any(alias in key for alias in aliases) for key in keys):
+            missing.append(section)
+    return missing
 
 
 def risk_level(files: list[dict], labels: list[str], cfg: Config, additions: int, deletions: int) -> tuple[str, list[str]]:
@@ -316,6 +351,13 @@ def main() -> int:
     deletions = sum(int(f.get("deletions", 0)) for f in files)
 
     level, reasons = risk_level(files, labels, cfg, additions, deletions)
+
+    # Enforce required PR payload sections (fails CI when missing)
+    body_text = str(pr.get("body", "") or "")
+    missing_sections = missing_pr_sections(body_text)
+    if missing_sections:
+        level = "L3"
+        reasons = [f"missing PR sections: {', '.join(missing_sections)}", *reasons]
 
     # ------------------------------------------------------------------
     # Decide action

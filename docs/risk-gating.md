@@ -26,6 +26,7 @@ Requirements:
 - CI green
 - PR template completed (intent + test plan)
 - No protected paths touched
+- Missing required PR sections should fail supervisor check
 
 ### L2 — Medium risk (supervisor review required; auto-merge off)
 Examples:
