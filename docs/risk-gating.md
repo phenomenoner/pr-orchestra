@@ -62,3 +62,7 @@ If a PR touches any of these, it is at least L2 (often L3):
 3) **GitHub integration**: label PRs (`risk:L0..L3`) and auto-merge only when label permits.
 
 We’ll start with (2) locally, and only do (3) after you confirm you want a GitHub Action/App.
+
+## Multilingual handling (relaxed)
+- PR payload structure is required, but no forced canonical English summary is required.
+- Mixed-language PRs are acceptable as long as intent/risk/test/docs sections are understandable.

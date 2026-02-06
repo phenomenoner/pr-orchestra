@@ -45,11 +45,11 @@ class Config:
 DEFAULT_CONFIG_PATH = Path(".supervisor-agent.yml")
 
 REQUIRED_PR_SECTIONS: dict[str, tuple[str, ...]] = {
-    "Intent": ("intent",),
-    "Approach": ("approach",),
-    "Risk/Impact": ("risk", "impact"),
-    "Test Plan": ("test plan", "testplan", "tests"),
-    "Docs/Notes": ("docs", "documentation", "notes"),
+    "Intent": ("intent", "意圖", "目的"),
+    "Approach": ("approach", "方法", "實作", "方案"),
+    "Risk/Impact": ("risk", "impact", "風險", "影響"),
+    "Test Plan": ("test plan", "testplan", "tests", "測試計畫", "測試方案"),
+    "Docs/Notes": ("docs", "documentation", "notes", "文件", "備註"),
 }
 
 
@@ -281,9 +281,13 @@ def _heading_line_key(line: str) -> str:
     return s
 
 
-def missing_pr_sections(body: str) -> list[str]:
+def _heading_keys(body: str) -> set[str]:
     text = body or ""
-    keys = {_heading_line_key(line) for line in text.splitlines() if line.strip()}
+    return {_heading_line_key(line) for line in text.splitlines() if line.strip()}
+
+
+def missing_pr_sections(body: str) -> list[str]:
+    keys = _heading_keys(body)
 
     missing: list[str] = []
     for section, aliases in REQUIRED_PR_SECTIONS.items():

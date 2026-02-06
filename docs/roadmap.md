@@ -14,8 +14,8 @@
 ## Phase 2 (quality-of-life)
 - [x] Better PR payload enforcement (fail check if missing sections)
 - [x] Auto-assign reviewers / owners by area
-- [ ] Support multiple languages in PR payload with canonical English summary
+- [x] Relaxed multilingual checks (no forced canonical English summary)
 
-## Phase 3 (optional variation: full agent workers)
-- [ ] Worker runtime interface (container/remote)
-- [ ] Supervisor delegates tasks to workers and audits artifacts
+## Out of scope for this repo (tracked for future project)
+- Full Agent Workers runtime (container/remote execution) is intentionally deferred.
+- See `docs/future-project-ideas.md` for follow-up project notes.

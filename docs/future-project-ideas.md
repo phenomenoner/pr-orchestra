@@ -1,0 +1,19 @@
+# Future Project Ideas
+
+## 1) Full Agent Workers (separate project)
+
+Status: **deferred / out-of-scope for PR Orchestra**.
+
+Why deferred:
+- PR Orchestra currently focuses on a GitHub-first coordination layer (Supervisor + Contributors), not runtime orchestration.
+- Worker runtime introduces a different operational surface (containers, isolation, infra lifecycle, secrets boundaries).
+
+Suggested follow-up project scope:
+- Worker runtime abstraction (`run task` contract)
+- Container/remote execution backends
+- Artifact handoff (`patch.diff`, `report.md`, logs)
+- Security model (sandbox, permissions, provenance)
+- Cost and quota controls per worker
+
+Trigger to start this project:
+- Stable adoption of PR Orchestra meeting mode + risk gate in real team workflows.

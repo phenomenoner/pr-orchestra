@@ -147,9 +147,10 @@ A small CLI (Python) provides:
 - script: fetch open PRs → meeting packet
 - open Issues for next tasks
 
-### Phase 2 — Worker-runtime variation (optional)
-- treat workers as replaceable runtimes (container/remote agent)
-- keep the same task contract + artifacts
+### Future (separate project)
+- Full Agent Workers runtime (container/remote) is intentionally moved out of this repo.
+- Keep PR Orchestra focused on GitHub-native coordination.
+- Track next-step exploration in `docs/future-project-ideas.md`.
 
 ---
 
@@ -157,6 +158,7 @@ A small CLI (Python) provides:
 - replacing GitHub permissions
 - building a full orchestration framework
 - forcing a single LLM/provider
+- implementing Full Agent Workers runtime in this repo (moved to future project)
 
 ---
 

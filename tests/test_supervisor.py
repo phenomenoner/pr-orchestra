@@ -209,6 +209,31 @@ def test_missing_pr_sections_detects_missing_items():
     assert "Docs/Notes" in missing
 
 
+def test_missing_pr_sections_accepts_zh_headings():
+    body = """
+    ## 意圖
+    說明
+
+    ## 方法
+    說明
+
+    ## 風險與影響
+    說明
+
+    ## 測試計畫
+    說明
+
+    ## 文件與備註
+    說明
+    """
+    assert missing_pr_sections(body) == []
+
+
+
+
+
+
+
 # ---------------------------------------------------------------------------
 # reviewer rules — parse + selection
 # ---------------------------------------------------------------------------

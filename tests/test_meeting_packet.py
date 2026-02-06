@@ -49,6 +49,26 @@ class TestMeetingPacket(unittest.TestCase):
         self.assertIn("Test Plan", missing)
         self.assertIn("Docs/Notes", missing)
 
+    def test_detect_missing_sections_zh_headings_supported(self):
+        body = """
+        ## 意圖
+        內容
+
+        ## 方法
+        內容
+
+        ## 風險與影響
+        內容
+
+        ## 測試計畫
+        內容
+
+        ## 文件與備註
+        內容
+        """
+        self.assertEqual(detect_missing_sections(body), [])
+
+
     def test_detect_dependencies(self):
         body = "depends on #12 and blocked by #9 then after #12"
         self.assertEqual(detect_dependencies(body), [9, 12])
