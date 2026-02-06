@@ -1,4 +1,4 @@
-name: Supervisor PR gate (template)
+name: PR Orchestra — Supervisor PR gate
 
 on:
   pull_request:

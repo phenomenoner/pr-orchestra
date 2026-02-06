@@ -93,8 +93,10 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
                     else:
                         setattr(cfg, k, [])
                 else:
-                    # scalar
-                    v2 = v.strip('"')
+                    # scalar — strip inline YAML comments
+                    if " #" in v:
+                        v = v[: v.index(" #")]
+                    v2 = v.strip().strip('"')
                     if hasattr(cfg, k):
                         # ints
                         if k in {"max_files_changed", "max_additions", "max_deletions"}:
@@ -119,6 +121,123 @@ def gh_api_json(url: str, token: str) -> Any:
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read().decode("utf-8"))
+
+
+def gh_api_post(url: str, token: str, body: dict) -> Any:
+    data = json.dumps(body).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "User-Agent": "eng-supervisor-agent/0.1",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# GitHub side-effects: label / comment / auto-merge
+# ---------------------------------------------------------------------------
+
+_LEVEL_COLORS = {"L0": "0075ca", "L1": "e4e669", "L2": "fbca04", "L3": "d73a4a"}
+
+
+def ensure_label(owner: str, name: str, token: str, level: str) -> None:
+    """Create the risk-level label in the repo if it doesn't exist yet."""
+    label_name = f"risk-{level}"
+    try:
+        gh_api_post(
+            f"https://api.github.com/repos/{owner}/{name}/labels",
+            token,
+            {"name": label_name, "color": _LEVEL_COLORS.get(level, "ee0701")},
+        )
+    except Exception:
+        pass  # 422 if already exists – that's fine
+
+
+def post_label(owner: str, name: str, pr_number: int, token: str, level: str) -> None:
+    """Apply risk-level label to PR."""
+    ensure_label(owner, name, token, level)
+    gh_api_post(
+        f"https://api.github.com/repos/{owner}/{name}/issues/{pr_number}/labels",
+        token,
+        {"labels": [f"risk-{level}"]},
+    )
+
+
+def post_comment(
+    owner: str,
+    name: str,
+    pr_number: int,
+    token: str,
+    level: str,
+    reasons: list[str],
+    files: list[dict],
+    decision: str,
+) -> None:
+    """Post a bilingual (EN + ZH-Hant) verdict comment."""
+    _decision_en = {"auto-merge": "✅ Auto-merge enabled", "recommend": "👀 Manual review recommended", "blocked": "🚫 Blocked"}
+    _decision_zh = {"auto-merge": "✅ 自動 merge 已啟動", "recommend": "👀 建議人工審核", "blocked": "🚫 封鎖"}
+
+    icon_en = _decision_en.get(decision, decision)
+    icon_zh = _decision_zh.get(decision, decision)
+
+    file_lines = "\n".join(
+        f"- `{f.get('filename', '?')}` (+{f.get('additions', 0)} / -{f.get('deletions', 0)})"
+        for f in files[:20]
+    )
+    truncation_note = "\n> ⚠️ Showing first 20 of {} files.\n".format(len(files)) if len(files) > 20 else ""
+
+    body = (
+        "## 🤖 Supervisor Verdict\n\n"
+        "| | EN | ZH-Hant |\n"
+        "|---|---|---|\n"
+        f"| **Risk** | {level} | {level} |\n"
+        f"| **Decision** | {icon_en} | {icon_zh} |\n\n"
+        "### Reasons\n"
+        + "".join(f"- {r}\n" for r in reasons)
+        + f"\n### Files changed ({len(files)})\n"
+        + file_lines
+        + truncation_note
+        + f"\n---\n*Label applied: `risk-{level}`*\n"
+    )
+
+    gh_api_post(
+        f"https://api.github.com/repos/{owner}/{name}/issues/{pr_number}/comments",
+        token,
+        {"body": body},
+    )
+
+
+def enable_auto_merge(pr_node_id: str, token: str) -> bool:
+    """Enable auto-merge on the PR via GitHub GraphQL API."""
+    query = (
+        "mutation($id: ID!) {\n"
+        "  enablePullRequestAutoMerge(input: {pullRequestId: $id, mergeMethod: MERGE}) {\n"
+        "    pullRequest { autoMergeEnabled }\n"
+        "  }\n"
+        "}\n"
+    )
+    try:
+        result = gh_api_post(
+            "https://api.github.com/graphql",
+            token,
+            {"query": query, "variables": {"id": pr_node_id}},
+        )
+        return (
+            result.get("data", {})
+            .get("enablePullRequestAutoMerge", {})
+            .get("pullRequest", {})
+            .get("autoMergeEnabled", False)
+        )
+    except Exception as exc:
+        eprint(f"auto-merge GraphQL failed: {exc}")
+        return False
 
 
 def matches_any(path: str, globs: list[str]) -> bool:
@@ -192,24 +311,63 @@ def main() -> int:
     if not isinstance(files, list):
         files = []
 
-    additions = int(pr.get("additions") or 0)
-    deletions = int(pr.get("deletions") or 0)
+    # Sum from files list (more reliable than event payload which may be 0 on "opened")
+    additions = sum(int(f.get("additions", 0)) for f in files)
+    deletions = sum(int(f.get("deletions", 0)) for f in files)
 
     level, reasons = risk_level(files, labels, cfg, additions, deletions)
+
+    # ------------------------------------------------------------------
+    # Decide action
+    # ------------------------------------------------------------------
+    if level == "L3":
+        decision = "blocked"
+    elif cfg.merge_mode == "auto_merge" and level in (cfg.auto_merge_levels or []):
+        decision = "auto-merge"
+    else:
+        decision = "recommend"
 
     verdict_lines = [
         f"Supervisor verdict: risk={level}",
         f"merge_mode={cfg.merge_mode}",
+        f"decision={decision}",
         f"reasons: {', '.join(reasons) if reasons else 'n/a'}",
     ]
-
-    # For v0 we only print the decision; wiring comments/labels/automerge happens next.
-    # Keeping minimal: this script is the policy engine.
     print("\n".join(verdict_lines))
 
-    # Exit codes:
-    # 0 = ok
-    return 0
+    # ------------------------------------------------------------------
+    # Side-effects: label → comment → (optional) auto-merge
+    # ------------------------------------------------------------------
+    dry_run = os.environ.get("SUPERVISOR_DRY_RUN", "").lower() in ("1", "true", "yes")
+
+    if dry_run:
+        eprint("[dry-run] Skipping label / comment / auto-merge.")
+    else:
+        # 1. Label
+        try:
+            post_label(owner, name, pr_number, token, level)
+            eprint(f"Label risk-{level} applied.")
+        except Exception as exc:
+            eprint(f"post_label failed: {exc}")
+
+        # 2. Comment
+        try:
+            post_comment(owner, name, pr_number, token, level, reasons, files, decision)
+            eprint("Verdict comment posted.")
+        except Exception as exc:
+            eprint(f"post_comment failed: {exc}")
+
+        # 3. Auto-merge (only when decision == "auto-merge")
+        if decision == "auto-merge":
+            pr_node_id = pr.get("node_id")
+            if pr_node_id:
+                ok = enable_auto_merge(pr_node_id, token)
+                eprint(f"Auto-merge {'enabled' if ok else 'FAILED'}.")
+            else:
+                eprint("No node_id in PR event; skipping auto-merge.")
+
+    # Exit 1 when blocked so CI can surface it
+    return 1 if decision == "blocked" else 0
 
 
 if __name__ == "__main__":
