@@ -5,7 +5,15 @@ from pathlib import Path
 
 # Make supervisor importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-from supervisor import risk_level, load_config, matches_any, missing_pr_sections, Config  # noqa: E402
+from supervisor import (
+    risk_level,
+    load_config,
+    matches_any,
+    missing_pr_sections,
+    parse_reviewer_rules,
+    pick_reviewers,
+    Config,
+)  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -199,6 +207,29 @@ def test_missing_pr_sections_detects_missing_items():
     assert "Risk/Impact" in missing
     assert "Test Plan" in missing
     assert "Docs/Notes" in missing
+
+
+# ---------------------------------------------------------------------------
+# reviewer rules — parse + selection
+# ---------------------------------------------------------------------------
+def test_parse_reviewer_rules():
+    rules = ["docs/**=alice", "scripts/**:bob,charlie", "invalid-rule"]
+    parsed = parse_reviewer_rules(rules)
+    assert parsed == [
+        ("docs/**", ["alice"]),
+        ("scripts/**", ["bob", "charlie"]),
+    ]
+
+
+def test_pick_reviewers_by_paths():
+    files = [
+        {"filename": "docs/guide.md"},
+        {"filename": "scripts/supervisor.py"},
+        {"filename": "README.md"},
+    ]
+    rules = ["docs/**=alice", "scripts/**=bob", "*.md=doc-team"]
+    selected = pick_reviewers(files, rules)
+    assert selected == ["alice", "bob", "doc-team"]
 
 
 # ---------------------------------------------------------------------------

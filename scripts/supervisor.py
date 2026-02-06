@@ -39,6 +39,7 @@ class Config:
 
     block_labels: list[str] = None  # type: ignore
     protected_paths: list[str] = None  # type: ignore
+    reviewer_rules: list[str] = None  # e.g. ["docs/**=alice", "scripts/**=bob,charlie"]
 
 
 DEFAULT_CONFIG_PATH = Path(".supervisor-agent.yml")
@@ -67,6 +68,7 @@ def load_config(path: Path = DEFAULT_CONFIG_PATH) -> Config:
             "docker-compose.*",
             "**/*lock*",
         ],
+        reviewer_rules=[],
     )
     if not path.exists():
         return cfg
@@ -223,6 +225,17 @@ def post_comment(
     )
 
 
+def request_reviewers(owner: str, name: str, pr_number: int, token: str, reviewers: list[str]) -> None:
+    """Request reviewers on a PR."""
+    if not reviewers:
+        return
+    gh_api_post(
+        f"https://api.github.com/repos/{owner}/{name}/pulls/{pr_number}/requested_reviewers",
+        token,
+        {"reviewers": reviewers},
+    )
+
+
 def enable_auto_merge(pr_node_id: str, token: str) -> bool:
     """Enable auto-merge on the PR via GitHub GraphQL API."""
     query = (
@@ -277,6 +290,41 @@ def missing_pr_sections(body: str) -> list[str]:
         if not any(any(alias in key for alias in aliases) for key in keys):
             missing.append(section)
     return missing
+
+
+def parse_reviewer_rules(rules: list[str]) -> list[tuple[str, list[str]]]:
+    parsed: list[tuple[str, list[str]]] = []
+    for raw in rules or []:
+        s = str(raw).strip()
+        if not s:
+            continue
+
+        if "=" in s:
+            pattern, rhs = s.split("=", 1)
+        elif ":" in s:
+            pattern, rhs = s.split(":", 1)
+        else:
+            continue
+
+        pattern = pattern.strip()
+        reviewers = [x.strip() for x in rhs.split(",") if x.strip()]
+        if pattern and reviewers:
+            parsed.append((pattern, reviewers))
+    return parsed
+
+
+def pick_reviewers(files: list[dict], rules: list[str]) -> list[str]:
+    parsed = parse_reviewer_rules(rules)
+    selected: list[str] = []
+
+    filenames = [f.get("filename") for f in files if isinstance(f.get("filename"), str)]
+    for pattern, reviewers in parsed:
+        if any(fnmatch.fnmatch(str(name), pattern) for name in filenames):
+            for r in reviewers:
+                if r not in selected:
+                    selected.append(r)
+
+    return selected
 
 
 def risk_level(files: list[dict], labels: list[str], cfg: Config, additions: int, deletions: int) -> tuple[str, list[str]]:
@@ -369,11 +417,14 @@ def main() -> int:
     else:
         decision = "recommend"
 
+    reviewers = pick_reviewers(files, cfg.reviewer_rules or [])
+
     verdict_lines = [
         f"Supervisor verdict: risk={level}",
         f"merge_mode={cfg.merge_mode}",
         f"decision={decision}",
         f"reasons: {', '.join(reasons) if reasons else 'n/a'}",
+        f"reviewers: {', '.join(reviewers) if reviewers else 'n/a'}",
     ]
     print("\n".join(verdict_lines))
 
@@ -383,7 +434,7 @@ def main() -> int:
     dry_run = os.environ.get("SUPERVISOR_DRY_RUN", "").lower() in ("1", "true", "yes")
 
     if dry_run:
-        eprint("[dry-run] Skipping label / comment / auto-merge.")
+        eprint("[dry-run] Skipping label / comment / reviewer request / auto-merge.")
     else:
         # 1. Label
         try:
@@ -399,7 +450,15 @@ def main() -> int:
         except Exception as exc:
             eprint(f"post_comment failed: {exc}")
 
-        # 3. Auto-merge (only when decision == "auto-merge")
+        # 3. Reviewer auto-assignment (optional)
+        if reviewers:
+            try:
+                request_reviewers(owner, name, pr_number, token, reviewers)
+                eprint(f"Requested reviewers: {', '.join(reviewers)}")
+            except Exception as exc:
+                eprint(f"request_reviewers failed: {exc}")
+
+        # 4. Auto-merge (only when decision == "auto-merge")
         if decision == "auto-merge":
             pr_node_id = pr.get("node_id")
             if pr_node_id:

@@ -29,6 +29,12 @@ protected_paths:
   - "**/security/**"
   - "Dockerfile"
   - "docker-compose.*"
+reviewer_rules:
+  - "docs/**=octo-docs"
+  - "scripts/**=octo-eng"
 ```
+
+`reviewer_rules` format: `glob=reviewer1,reviewer2` (or `glob:reviewer1,reviewer2`).
+If a changed file matches a glob, the supervisor requests those reviewers on the PR.
 
 The supervisor may override these at run-time (role assumption), but should print the chosen settings in its first comment.

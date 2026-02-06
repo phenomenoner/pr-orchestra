@@ -13,7 +13,7 @@
 
 ## Phase 2 (quality-of-life)
 - [x] Better PR payload enforcement (fail check if missing sections)
-- [ ] Auto-assign reviewers / owners by area
+- [x] Auto-assign reviewers / owners by area
 - [ ] Support multiple languages in PR payload with canonical English summary
 
 ## Phase 3 (optional variation: full agent workers)

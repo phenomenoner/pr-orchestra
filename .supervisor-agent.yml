@@ -23,3 +23,8 @@ protected_paths:
   - "Dockerfile"
   - "docker-compose.*"
   - "**/*lock*"  # lockfiles
+
+# Optional reviewer auto-assignment rules (glob=reviewer1,reviewer2)
+reviewer_rules:
+  - "docs/**=octo-docs"
+  - "scripts/**=octo-eng"

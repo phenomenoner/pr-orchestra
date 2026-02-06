@@ -67,6 +67,8 @@ python3 scripts/meeting_packet.py --repo owner/name --out docs/MEETING_PACKET.md
 ```
 *Summarizes open PRs, risk levels, missing PR sections, and recommended merge order.*
 
+Supervisor policy also supports optional reviewer auto-assignment via `.supervisor-agent.yml` `reviewer_rules`.
+
 **Create Issues for next tasks:**
 ```bash
 python3 scripts/create_next_tasks.py --repo owner/name --input docs/NEXT_TASKS.md
