@@ -34,4 +34,4 @@ Issue creation helper (next tasks):
 python3 scripts/create_next_tasks.py --repo owner/name --input docs/NEXT_TASKS.md --dry-run
 ```
 
-> Note: The workflow defaults to dry-run; flip `SUPERVISOR_DRY_RUN` to enable labels/comments/auto-merge.
+> Note: `SUPERVISOR_DRY_RUN` controls side effects (labels/comments/auto-merge). If unset, the workflow defaults to **active** (`false`). Set it to `true` to run in dry-run mode.

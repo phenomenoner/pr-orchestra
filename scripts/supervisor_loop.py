@@ -93,7 +93,15 @@ def infer_allowed_globs(issue: dict) -> list[str]:
         return paths
 
     # Safer default than **/*; supervisors should narrow this per task as needed.
-    return ["src/**", "scripts/**", "tests/**", "docs/**", "README.md"]
+    return [
+        "src/**",
+        "scripts/**",
+        "tests/**",
+        "docs/**",
+        "templates/**",
+        ".supervisor-agent.yml",
+        "README.md",
+    ]
 
 
 def fetch_tasks(repo_url, token):

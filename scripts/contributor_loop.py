@@ -38,14 +38,26 @@ def run_cmd(args, check=True):
 
 
 def get_git_status_files() -> set[str]:
+    """Return a set of paths mentioned by `git status --porcelain`.
+
+    For renames, we include both the old and new paths so later staging can be precise.
+    """
     res = run_cmd(["git", "status", "--porcelain"], check=False)
     files: set[str] = set()
     for raw in (res.stdout or "").splitlines():
         if len(raw) < 4:
             continue
         path = raw[3:].strip()
+
         if " -> " in path:
-            path = path.split(" -> ", 1)[1].strip()
+            old, new = [p.strip() for p in path.split(" -> ", 1)]
+            for p in (old, new):
+                if p.startswith('"') and p.endswith('"'):
+                    p = p[1:-1]
+                if p:
+                    files.add(p)
+            continue
+
         if path.startswith('"') and path.endswith('"'):
             path = path[1:-1]
         if path:
@@ -71,7 +83,6 @@ def build_work_command(task_id: str, task_path: Path) -> tuple[list[str], str]:
     exec_cmd = os.environ.get("AGENT_EXEC_CMD")
     if exec_cmd:
         formatted_cmd = exec_cmd.format(task_id=task_id, task_file=str(task_path))
-        print(f"   Running execution hook: {formatted_cmd}")
         if os.name == "nt":
             return [os.environ.get("COMSPEC", "cmd.exe"), "/d", "/s", "/c", formatted_cmd], f"Executed hook command: `{formatted_cmd}`."
         return ["/bin/sh", "-lc", formatted_cmd], f"Executed hook command: `{formatted_cmd}`."
@@ -151,7 +162,9 @@ def process_task(task_path):
     changed_files = sorted(current_files - baseline_files)
 
     if changed_files:
-        run_cmd(["git", "add", "-A"])
+        # Stage only files that changed during this task, to avoid accidentally committing
+        # unrelated local edits/untracked files.
+        run_cmd(["git", "add", "-A", "--", *changed_files])
         commit_res = run_cmd(["git", "commit", "-m", f"feat: implemented {task_id}"], check=False)
         if commit_res.returncode != 0:
             print("   NOTE: No commitable changes after staging.")
