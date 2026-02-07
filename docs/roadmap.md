@@ -19,3 +19,8 @@
 ## Out of scope for this repo (tracked for future project)
 - Full Agent Workers runtime (container/remote execution) is intentionally deferred.
 - See `docs/future-project-ideas.md` for follow-up project notes.
+
+## Parked (revisit only if needed)
+- Optional `contributor_backend` switch (OpenClaw sub-agents vs Codex CLI).
+  - Default: OpenClaw sub-agents.
+  - Revisit if: CI portability becomes a near-term goal, we need a more deterministic patch→test worker loop, or we want stricter sandbox separation.
