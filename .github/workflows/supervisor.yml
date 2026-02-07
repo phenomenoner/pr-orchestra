@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Set to "true" to print verdict without posting labels/comments/auto-merge.
-          # Flip to "false" (or remove) once validated in your repo.
-          SUPERVISOR_DRY_RUN: ${{ vars.SUPERVISOR_DRY_RUN || 'true' }}
+          # Default is "false" so the gate is active unless explicitly disabled.
+          SUPERVISOR_DRY_RUN: ${{ vars.SUPERVISOR_DRY_RUN || 'false' }}
         run: |
           python scripts/supervisor.py

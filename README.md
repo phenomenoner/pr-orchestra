@@ -36,6 +36,46 @@ PR Orchestra focuses on the missing layer:
 
 ---
 
+## Agent Protocol Entry Point
+
+Use this when you want any coding agent to adopt PR Orchestra before touching code.
+
+Rules for agent startup:
+- The agent must confirm role first: `Supervisor` or `Contributor`.
+- If role is not explicitly provided, the agent must ask before implementation.
+- After role is confirmed, the agent should load the matching template prompt and restate constraints.
+
+Suggested kickoff prompt (role not decided yet):
+
+```text
+Adopt the PR Orchestra protocol for this session.
+Target repo: Tommy-tung/agent-fine-tune-alpha.
+Before coding, ask me which role to assume now: Supervisor or Contributor.
+After I answer, load the matching instructions from:
+- templates/supervisor_role_prompt.md
+- templates/contributor_agent_instructions.md
+Then restate the operating rules and wait for my next task.
+```
+
+Suggested kickoff prompt (force Contributor mode):
+
+```text
+Adopt PR Orchestra protocol in Contributor mode for repo Tommy-tung/agent-fine-tune-alpha.
+Load templates/contributor_agent_instructions.md and templates/pr_template.md.
+Follow one-PR-one-intent, keep changes small, and use required PR payload sections.
+If task scope is unclear, ask me before coding.
+```
+
+Suggested kickoff prompt (force Supervisor mode):
+
+```text
+Adopt PR Orchestra protocol in Supervisor mode for repo Tommy-tung/agent-fine-tune-alpha.
+Load templates/supervisor_role_prompt.md and .supervisor-agent.yml.
+Run risk triage and meeting-assistant behavior only; do not implement contributor code unless I explicitly switch your role.
+```
+
+---
+
 ## Quick Start (with `uv`, Python 3.13)
 
 ### 1) Clone and enter repo
@@ -47,6 +87,12 @@ cd pr-orchestra
 
 ### 2) Set GitHub token
 
+PowerShell:
+```powershell
+$env:GITHUB_TOKEN="<your-token>"
+```
+
+Bash:
 ```bash
 export GITHUB_TOKEN="<your-token>"
 ```
