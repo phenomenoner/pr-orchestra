@@ -49,7 +49,7 @@ Suggested kickoff prompt (role not decided yet):
 
 ```text
 Adopt the PR Orchestra protocol for this session.
-Target repo: Tommy-tung/agent-fine-tune-alpha.
+Target repo: <owner>/<repo>.
 Before coding, ask me which role to assume now: Supervisor or Contributor.
 After I answer, load the matching instructions from:
 - templates/supervisor_role_prompt.md
@@ -60,7 +60,7 @@ Then restate the operating rules and wait for my next task.
 Suggested kickoff prompt (force Contributor mode):
 
 ```text
-Adopt PR Orchestra protocol in Contributor mode for repo Tommy-tung/agent-fine-tune-alpha.
+Adopt PR Orchestra protocol in Contributor mode for repo <owner>/<repo>.
 Load templates/contributor_agent_instructions.md and templates/pr_template.md.
 Follow one-PR-one-intent, keep changes small, and use required PR payload sections.
 If task scope is unclear, ask me before coding.
@@ -69,7 +69,7 @@ If task scope is unclear, ask me before coding.
 Suggested kickoff prompt (force Supervisor mode):
 
 ```text
-Adopt PR Orchestra protocol in Supervisor mode for repo Tommy-tung/agent-fine-tune-alpha.
+Adopt PR Orchestra protocol in Supervisor mode for repo <owner>/<repo>.
 Load templates/supervisor_role_prompt.md and .supervisor-agent.yml.
 Run risk triage and meeting-assistant behavior only; do not implement contributor code unless I explicitly switch your role.
 ```
