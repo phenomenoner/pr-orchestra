@@ -20,6 +20,13 @@ If the human wants `Supervisor` behavior, stop and switch to `templates/supervis
 - Do not introduce new dependencies unless asked.
 - Never include secrets (tokens/keys) in code or logs.
 
+## On-demand coordination (recommended)
+If your team uses a per-branch `supervisor_discussion.md` file:
+- Read it at the start of each work session.
+- Reply with a short plan before coding.
+- Before pushing, update your reply with test evidence and integration notes.
+- Keep updates recommendation- and discussion-oriented.
+
 ## Required PR payload
 Follow the project PR template:
 - Intent

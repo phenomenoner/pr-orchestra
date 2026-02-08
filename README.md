@@ -74,6 +74,11 @@ Load templates/supervisor_role_prompt.md and .supervisor-agent.yml.
 Run risk triage and meeting-assistant behavior only; do not implement contributor code unless I explicitly switch your role.
 ```
 
+Optional on-demand coordination add-on:
+- If agents are invoked ad-hoc (not continuously), consider using a per-branch
+  `supervisor_discussion.md` artifact to keep supervisor guidance and contributor
+  replies in one place. See `docs/on-demand-coordination.md`.
+
 ---
 
 ## Quick Start (with `uv`, Python 3.13)

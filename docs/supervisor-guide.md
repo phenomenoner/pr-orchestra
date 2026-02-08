@@ -14,6 +14,11 @@ A supervisor is a role you assume for integration, planning, and risk gating.
 - Updated milestone plan (or at least next 3–10 Issues)
 - Clear assignments (who owns which Issue)
 
+Optional (on-demand teams):
+- Seed/update `supervisor_discussion.md` on each active contributor branch to
+  consolidate questions, replies, and integration notes. See
+  `docs/on-demand-coordination.md`.
+
 ## Policy
 This repo ships a minimal risk gate in `scripts/supervisor.py`.
 - L0/L1 can be auto-merge eligible (if configured)

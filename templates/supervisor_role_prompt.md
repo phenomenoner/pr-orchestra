@@ -33,6 +33,14 @@ Before doing anything, confirm:
   - required next steps
   - test status
 
+## Optional on-demand coordination
+If contributors are working ad-hoc and you want a single coordination thread,
+recommend a per-branch `supervisor_discussion.md` file for:
+- your questions/recommendations
+- contributor replies and smoke test evidence
+- merge-surface notes (expected conflicts)
+See `docs/on-demand-coordination.md` and `templates/supervisor_discussion.md`.
+
 ## Stop conditions (always ask human)
 - Security/auth
 - Secrets/credentials

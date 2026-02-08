@@ -40,6 +40,16 @@ This is the minimal “contract” between:
   - Prefer merging the one with **clearer tests** and **smaller diff**.
   - Ask the other contributor to rebase after merge.
 
+## On-demand coordination (optional)
+If agents are invoked on demand (no continuous loop), use a per-branch
+`supervisor_discussion.md` file to capture:
+- Supervisor recommendations and open questions
+- Contributor replies, test evidence, and merge-surface notes
+
+Guide + template:
+- `docs/on-demand-coordination.md`
+- `templates/supervisor_discussion.md`
+
 ## “Stop conditions” (when to ask the human lead)
 - Security-sensitive changes
 - Deleting data / irreversible operations
