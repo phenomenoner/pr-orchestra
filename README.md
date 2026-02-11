@@ -211,6 +211,7 @@ uv run --python 3.13 -- python -m unittest -v tests/test_meeting_packet.py tests
 ## Related reading / philosophy
 
 - Thought links: SDD vs Vibe Engineering (and how this repo positions itself): `docs/thought-links.md`
+- Operational checklists (spec-lite vs ship): `docs/spec-lite-checklists.md`
 - SDD critique (zh): https://ihower.tw/blog/13480-sdd-spec-driven-development
 - Vibe Engineering (Simon Willison): https://simonwillison.net/2025/Oct/7/vibe-engineering/
 

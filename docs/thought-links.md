@@ -43,3 +43,6 @@ PR Orchestra is an opinionated layer to support **vibe engineering at scale**:
 In other words:
 - **spec-lite** when it helps (small plans, clear acceptance criteria),
 - but rely on *engineering discipline* (tests, review, rollback) as the real safety net.
+
+Operational guide:
+- See `docs/spec-lite-checklists.md` for quick “when to spec vs ship” rules.
